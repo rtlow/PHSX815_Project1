@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import numpy as np
+import scipy.special as special
 
 #################
 # Random class
@@ -92,3 +93,85 @@ class Random:
                 break
 
         return mu + sig*v/u
+
+
+    # function returns a random integer according to a Poisson distribution
+    # See section 7.3.12
+    def Poisson(self, rate=1.):
+
+        old_rate = -1
+
+        logfact = np.ones(1024) * -1.
+        
+        # uses product of uniforms method
+        if rate < 5:
+            if (rate != old_rate):
+                exprate = np.exp(-rate)
+
+            k = -1
+            t = 1.
+            # trick to doing do-while in Python
+            while True:
+
+                k+=1
+                t *= self.rand()
+
+                if (t <= exprate):
+                    break
+        # otherwise uses ratio of uniforms method
+        else:
+            if (rate != old_rate):
+                sqrtrate = np.sqrt(rate)
+                lograte = np.log(rate)
+            
+            # this is a real infinite loop with various break conditions
+            while True:
+                u = 0.64 * self.rand()
+                v = -0.68 + 1.28 * self.rand()
+
+                # outer squeeze for rejection
+                if (rate > 13.5):
+                    v2 = np.square(v)
+
+                    if (v >=0.):
+                        if(v2 > 6.5*u*(0.64-u)*(u+0.2)):
+                           continue
+
+                    else:
+
+                        if (v2 > 9.6*u*(0.66-u)*(u+0.07)):
+                            continue
+
+                k = int(sqrtrate*(v/u)+rate+0.5)
+
+                if (k < 0):
+                        continue
+
+                u2 = np.square(u)
+                
+                # inner squeeze for acceptance
+                if (rate > 13.5):
+                    if (v>0.):
+                        if (v2 < 15.2*u2*(0.61-u)*(0.8-u)):
+                            break
+
+                    else:
+                        if (v2 < 6.76*u2*(0.62-u)*(1.4-u)):
+                            break
+                if (k < 1024):
+                    if (logfact[k] < 0.):
+                        logfact[k] = special.gammaln(k + 1.)
+
+                    lfac = logfact[k]
+
+                else:
+                    lfac = special.gammaln(k+1.)
+
+                # apparently slow, so only does this if absolutely necessary
+                p = sqrtrate*np.exp(-rate + k*lograte - lfac)
+
+                if (u2 < p):
+                    break
+
+        old_rate = rate
+        return k
