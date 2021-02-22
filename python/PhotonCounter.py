@@ -8,21 +8,21 @@ import numpy as np
 sys.path.append(".")
 from python.Random import Random
 
-# main function for our coin toss Python code
+# main function for experiment code
 if __name__ == "__main__":
     # if the user includes the flag -h or --help print the options
     if '-h' in sys.argv or '--help' in sys.argv:
-        print ("Usage: %s [-seed number]" % sys.argv[0])
+        print ("Usage: %s [-seed number] -rate [rate parameter] -Nmeas [no. measurements] -Nexp [no. experiments] -output [outfile]" % sys.argv[0])
         print
         sys.exit(1)
 
     # default seed
     seed = 5555
 
-    # default rate parameter for cookie disappearance (cookies per day)
+    # default rate parameter for electron counts (counts per second)
     rate = 1.
 
-    # default number of time measurements (time to next missing cookie) - per experiment
+    # default number of exposures (letting light collect for fixed time) - per experiment
     Nmeas = 1
 
     # default number of experiments
@@ -63,13 +63,13 @@ if __name__ == "__main__":
         outfile.write(str(rate)+" \n")
         for e in range(0,Nexp):
             for t in range(0,Nmeas):
-                outfile.write(str(random.Exponential(rate))+" ")
+                outfile.write(str(random.Poisson(rate))+" ")
             outfile.write(" \n")
         outfile.close()
     else:
         print(rate)
         for e in range(0,Nexp):
             for t in range(0,Nmeas):
-                print(random.Exponential(rate), end=' ')
+                print(random.Poisson(rate), end=' ')
             print(" ")
    
