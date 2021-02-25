@@ -26,7 +26,7 @@ from python.MySort import MySort
 # using the Stirling approximation
 def PoisProb(x, rate):
 
-    logP = x * np.log(rate) - x * np.log(x) + x - rate
+    logP = x * np.log(rate) - rate - special.gammaln(x + 1)
 
     P = np.exp(logP)
     
@@ -44,8 +44,8 @@ def PlotHypotheses(array0, array1, title, alpha):
 
     fig = plt.figure(figsize=[12,7])
     ax = plt.axes()
-    plt.hist(array0, N0 + 1, density=True, facecolor='b', alpha=0.5, label='$P(\lambda | H0)$')
-    plt.hist(array1, N1 + 1, density=True, facecolor='g', alpha=0.5, label='$P(\lambda | H1)$')
+    n1, b1, p1 = plt.hist(array0, N0 + 1, density=True, facecolor='b', alpha=0.5, label='$P(\lambda | H0)$')
+    n2, b2, p2 = plt.hist(array1, N1 + 1, density=True, facecolor='g', alpha=0.5, label='$P(\lambda | H1)$')
     
     ax.set_yscale('log')
 
@@ -54,17 +54,44 @@ def PlotHypotheses(array0, array1, title, alpha):
 
     plt.legend()
     
-    fig.savefig('Probability.pdf')
-    fig.show()
-
     
     lambda_crit = 0
     beta = 0
-
+    
+    print(alpha)
+    print(1/N0)
+    # TODO figure out this block TODO
     if(alpha > 1/N0):
         lambda_crit = array0[min(int((1-alpha)*N0), N0-1)]
         beta = 0
-    # TODO Fill in the rest of the hypothesis testing routine TODO
+        
+        below_alpha = []
+        above_alpha = []
+
+        for i in range(N0):
+            if array0[i] > lambda_crit:
+                above_alpha.append(array0[i])
+        for i in range(N1):
+            if array1[i] < lambda_crit:
+                beta +=1
+
+                below_alpha.append(array1[i])
+        beta /= N1
+        
+        below_alpha = np.array(below_alpha)
+        above_alpha = np.array(above_alpha)
+
+        w1 = below_alpha / N0
+        w2 = above_alpha / N1
+
+        #plt.hist(below_alpha, bins=b1, weights=w1, alpha=0.5, color='darkblue')
+        #plt.hist(above_alpha, bins=b2, weights=w2, alpha=0.5, color='lime')
+        
+        plt.axvline(lambda_crit)
+        plt.text(lambda_crit, ax.get_ylim()[1] * 0.8, 'alpha = {:.3f}'.format(alpha))
+    fig.savefig('Hypotheses.pdf')
+    fig.show()
+
     return
 
 # main function for our CookieAnalysis Python code
@@ -88,6 +115,9 @@ if __name__ == "__main__":
         if sys.argv[i] == '-H1':
             InputFile[1] = sys.argv[i+1]
             haveInput[1] = True
+
+        if sys.argv[i] == '-alpha':
+            alpha = float(sys.argv[i + 1])
     
     if '-h' in sys.argv or '--help' in sys.argv or not np.all(haveInput):
         print ("Usage: %s [options] -H0 [input file for H0] -H1 [input file for H1]" % sys.argv[0])
