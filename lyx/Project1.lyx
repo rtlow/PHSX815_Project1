@@ -170,5 +170,40 @@ Modern astronomy relies on Charged Coupled Devices (CCDs) and other such
  
 \end_layout
 
+\begin_layout Standard
+\begin_inset Formula 
+\[
+P\left(x|\lambda\right)=\frac{\lambda^{x}e^{-\lambda}}{x!}
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\ln P=\ln\left(\lambda^{x}\right)+\ln\left(e^{-\lambda}\right)-\ln\left(x!\right)
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\ln P=x\ln\lambda-\lambda-\ln x!
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\ln P\approx x\ln\lambda-\lambda-x\ln x+x
+\]
+
+\end_inset
+
+
+\end_layout
+
 \end_body
 \end_document

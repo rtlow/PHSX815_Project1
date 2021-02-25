@@ -6,6 +6,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+import scipy.special as special
 
 #setting matplotlib ticksize
 matplotlib.rc('xtick', labelsize=14) 
@@ -21,10 +22,18 @@ from python.MySort import MySort
 
 # helper functions
 
-
+# PoisProb approximates the Poisson probability
+# using the Stirling approximation
 def PoisProb(x, rate):
-    return (rate**x) * np.exp(-rate) / math.factorial(x)
 
+    logP = x * np.log(rate) - x * np.log(x) + x - rate
+
+    P = np.exp(logP)
+    
+    return P
+
+# given two sets of data and a significance level, plots the histograms
+# with significance
 def PlotHypotheses(array0, array1, title, alpha):
 
     N0 = len(array0)
@@ -44,8 +53,19 @@ def PlotHypotheses(array0, array1, title, alpha):
     ax.set_ylabel('Probability')
 
     plt.legend()
+    
+    fig.savefig('Probability.pdf')
+    fig.show()
 
-    return fig, ax
+    
+    lambda_crit = 0
+    beta = 0
+
+    if(alpha > 1/N0):
+        lambda_crit = array0[min(int((1-alpha)*N0), N0-1)]
+        beta = 0
+    # TODO Fill in the rest of the hypothesis testing routine TODO
+    return
 
 # main function for our CookieAnalysis Python code
 if __name__ == "__main__":
@@ -84,22 +104,30 @@ if __name__ == "__main__":
     counts = []
     need_rate = True
     
+    # loop over all hypotheses (only 2)
     for h in range(2):
         
         need_rate = True
         this_hyp = []
         
         with open(InputFile[h]) as ifile:
+            
+            # parse each line
             for line in ifile:
+                
+                # first line is the rate parameter
                 if need_rate:
                     need_rate = False
                     rate.append(float(line))
                     continue
             
+                # each line is a different experiment
                 lineVals = line.split()
                 Nmeas = len(lineVals)
                 
                 this_exp = []
+                
+                # need to go through all measurements to convert them from string to float
                 for m in range(Nmeas):
                     this_exp.append(float(lineVals[m]))
                 this_hyp.append(this_exp)
@@ -108,20 +136,24 @@ if __name__ == "__main__":
 
 
     LLR = []
-
+    
+    # loop over all hypotheses
     for h in range(2):
         
         this_hyp = []
 
         Nexp = len(counts[h])
 
+        # loop over all experiments
         for e in range(Nexp):
             Nmeas = len(counts[h][e])
 
             LogLikeRatio = 0.
 
+            # loop over all measurements to calculate the LLR
             for m in range(Nmeas):
-
+    
+                # LLR is a sum; one contributes positive, other negative
                 LogLikeRatio += np.log( PoisProb( counts[h][e][m], rate[1] ) ) # LLR for H1
 
                 LogLikeRatio -= np.log( PoisProb( counts[h][e][m], rate[0] ) ) # LLR for H0
@@ -130,6 +162,7 @@ if __name__ == "__main__":
 
         LLR.append(this_hyp)
     
+    # sort the data
     Sorter = MySort()
 
     LLR[0] = Sorter.DefaultSort(LLR[0])
@@ -137,10 +170,6 @@ if __name__ == "__main__":
 
     plot_title = "{} measurements / experiment with rates {:.2f}, {:.2f} counts / sec".format(Nmeas, rate[0], rate[1])
 
-    fig, ax = PlotHypotheses(LLR[0], LLR[1], plot_title, alpha)
-
-
-    fig.savefig('Hypotheses.pdf')
-
-    fig.show()
+    # plot the histogram
+    PlotHypotheses(LLR[0], LLR[1], plot_title, alpha)
 

@@ -157,6 +157,16 @@ Modern astronomy relies on Charged Coupled Devices (CCDs) and other such
  noise.
  Since the noise appears in our counts, we can also expect it to be distributed
  as a Poisson distribution.
+ We will consider an idealized system of a single pixel and investigate
+ whether we can distinguish between a noise source with rate parameter 
+\begin_inset Formula $\lambda_{noise}$
+\end_inset
+
+ and some astronomical source with rate parameter 
+\begin_inset Formula $\lambda_{star}$
+\end_inset
+
+.
  
 \end_layout
 
