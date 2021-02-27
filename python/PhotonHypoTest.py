@@ -44,55 +44,47 @@ def PlotHypotheses(array0, array1, title, alpha):
 
     fig = plt.figure(figsize=[12,7])
     ax = plt.axes()
-    n1, b1, p1 = plt.hist(array0, N0 + 1, density=True, facecolor='b', alpha=0.5, label='$P(\lambda | H0)$')
-    n2, b2, p2 = plt.hist(array1, N1 + 1, density=True, facecolor='g', alpha=0.5, label='$P(\lambda | H1)$')
+
+    # just 100 bins for visualization
+    plt.hist(array0, 100, density=True, color='b', alpha=0.5, label='$P(\lambda | H0)$')
+    plt.hist(array1, 100, density=True, color='g', alpha=0.5, label='$P(\lambda | H1)$')
     
+    lambda_crit = 0
+    beta = 0
+    
+    # since the list is sorted
+    # lambda_crit is achieved at 1-alpha percent of the way through array0
+    # or at its end
+    lambda_crit = array0[min(int((1-alpha)*N0), N0-1)]
+    
+    # gets the index of the first value in array1 that is above lambda_crit
+    first_leftover = np.where( array1 > lambda_crit )[0][0]
+
+    # since the list is sorted
+    # beta percent of the way through array1 is the first value
+    # in array1 that is above lambda_crit
+    # knowing that index, divide by N1 to get beta
+    beta = first_leftover/N1
+
+    # fancy plot formatting
+    plt.axvline(lambda_crit, color='k')
+    plt.text(lambda_crit, ax.get_ylim()[1] * 0.8, '$\\alpha = {:.3f}$'.format(alpha))
+    plt.plot([],[], '', label='$\\alpha = {:.3f}$'.format(alpha))
+    plt.plot([],[], '', label='$\\beta = {:.3f}$'.format(beta))
+    plt.plot([],[], '', label='$\lambda_{crit} = $' + '${:.3f}$'.format(lambda_crit))
     ax.set_yscale('log')
 
     ax.set_xlabel('$\lambda = \log [ \mathcal{L}(H1) / \mathcal{L}(H0) ]$')
     ax.set_ylabel('Probability')
 
     plt.legend()
-    
-    
-    lambda_crit = 0
-    beta = 0
-    
-    print(alpha)
-    print(1/N0)
-    # TODO figure out this block TODO
-    if(alpha > 1/N0):
-        lambda_crit = array0[min(int((1-alpha)*N0), N0-1)]
-        beta = 0
-        
-        below_alpha = []
-        above_alpha = []
 
-        for i in range(N0):
-            if array0[i] > lambda_crit:
-                above_alpha.append(array0[i])
-        for i in range(N1):
-            if array1[i] < lambda_crit:
-                beta +=1
+    plt.title(title)
 
-                below_alpha.append(array1[i])
-        beta /= N1
-        
-        below_alpha = np.array(below_alpha)
-        above_alpha = np.array(above_alpha)
-
-        w1 = below_alpha / N0
-        w2 = above_alpha / N1
-
-        #plt.hist(below_alpha, bins=b1, weights=w1, alpha=0.5, color='darkblue')
-        #plt.hist(above_alpha, bins=b2, weights=w2, alpha=0.5, color='lime')
-        
-        plt.axvline(lambda_crit)
-        plt.text(lambda_crit, ax.get_ylim()[1] * 0.8, 'alpha = {:.3f}'.format(alpha))
     fig.savefig('Hypotheses.pdf')
-    fig.show()
+    plt.show()
 
-    return
+    return alpha, beta, lambda_crit
 
 # main function for our CookieAnalysis Python code
 if __name__ == "__main__":
@@ -102,7 +94,8 @@ if __name__ == "__main__":
     InputFile = [None, None]
 
     alpha = 0.
-
+    
+    # reading in the cmd args
     for i in range(1,len(sys.argv)):
         if sys.argv[i] == '-h' or sys.argv[i] == '--help':
             continue
@@ -195,11 +188,16 @@ if __name__ == "__main__":
     # sort the data
     Sorter = MySort()
 
-    LLR[0] = Sorter.DefaultSort(LLR[0])
-    LLR[1] = Sorter.DefaultSort(LLR[1])
+    LLR[0] = np.array(Sorter.DefaultSort(LLR[0]))
+    LLR[1] = np.array(Sorter.DefaultSort(LLR[1]))
 
-    plot_title = "{} measurements / experiment with rates {:.2f}, {:.2f} counts / sec".format(Nmeas, rate[0], rate[1])
+    plot_title = "{} measurements / experiment with rates $\lambda_0 = {:.2f}$, $\lambda_1 = {:.2f}$ counts / sec".format(Nmeas, rate[0], rate[1])
 
     # plot the histogram
-    PlotHypotheses(LLR[0], LLR[1], plot_title, alpha)
+    alpha, beta, lambda_crit = PlotHypotheses(LLR[0], LLR[1], plot_title, alpha)
+    
+    print
+    print('Using alpha = {:.3f}, we get lambda_crit = {:.3f} and beta = {:.3f}'.format(alpha, beta, lambda_crit))
+    print
+    sys.exit(1)
 
