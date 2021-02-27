@@ -34,7 +34,7 @@ def PoisProb(x, rate):
 
 # given two sets of data and a significance level, plots the histograms
 # with significance
-def PlotHypotheses(array0, array1, title, alpha):
+def PlotHypotheses(array0, array1, title, alpha, filename='Hypotheses'):
 
     N0 = len(array0)
     N1 = len(array1)
@@ -80,7 +80,7 @@ def PlotHypotheses(array0, array1, title, alpha):
     
     plt.grid(True)
 
-    fig.savefig('Hypotheses.pdf')
+    fig.savefig(filename + '.pdf')
     plt.show()
 
     return alpha, beta, lambda_crit
@@ -192,10 +192,12 @@ if __name__ == "__main__":
 
     plot_title = "{} measurements / experiment with rates $\lambda_0 = {:.2f}$, $\lambda_1 = {:.2f}$ counts / sec".format(Nmeas, rate[0], rate[1])
 
+    fname = 'rate1_{:.2f}rate2_{:.2f}'.format(rate[0], rate[1])
     # plot the histogram
-    alpha, beta, lambda_crit = PlotHypotheses(LLR[0], LLR[1], plot_title, alpha)
+    alpha, beta, lambda_crit = PlotHypotheses(LLR[0], LLR[1], plot_title, alpha, filename=fname)
     
     print
+    print('Plot output as ' + fname + '.pdf')
     print('Using alpha = {:.3f}, we get lambda_crit = {:.3f} and beta = {:.3f}'.format(alpha, beta, lambda_crit))
     print
     sys.exit(1)

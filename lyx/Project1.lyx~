@@ -170,5 +170,188 @@ Modern astronomy relies on Charged Coupled Devices (CCDs) and other such
  
 \end_layout
 
+\begin_layout Section
+Problem Statement
+\end_layout
+
+\begin_layout Standard
+Suppose we can successfully characterize the noise level for a CCD.
+ In practice, we can do this by taking two types of calibration frames:
+ bias frames and dark frames.
+ Bias frames are zero second exposures that characterize the readout noise
+ and the random bias signal present on the CCD.
+ Dark frames are similar.
+ Ideally, we expose the CCD to zero light for a fixed length of time.
+ This allows us to measure the dark current on the CCD.
+ Suppose that by taking these calibration frames, we find that 
+\begin_inset Formula $\lambda_{noise}=10$
+\end_inset
+
+.
+ Given some faint astronomical source with rate parameter 
+\begin_inset Formula $\lambda_{star}$
+\end_inset
+
+, our task is to see whether we can distinguish between the noise or the
+ source at some significance level.
+\end_layout
+
+\begin_layout Section
+Algorithm Analysis
+\end_layout
+
+\begin_layout Standard
+For this analysis, we generate simulated data using Python code.
+ Since photon counting is a Poisson process, our simulation must be able
+ to generate Poisson-distributed random numbers.
+ We produce Poisson deviates using the implementation from section 7.3.12
+ in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "10.5555/1403886"
+literal "false"
+
+\end_inset
+
+.
+ This method produces Poisson deviates from uniform deviates using the ratio-of-
+uniforms method, the product-of-uniforms method, and the rejection method
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "10.5555/1403886"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+For our test statistic, we use the Log Likelihood Ratio (LLR).
+ The LLR is calculated using Equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:LLR"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{equation}
+\text{LLR}=\sum_{i}^{N}\log\left(\frac{P\left(x_{i}|H_{0}\right)}{P\left(x_{i}|H_{1}\right)}\right)\label{eq:LLR}
+\end{equation}
+
+\end_inset
+
+Where the probabilities are the Poisson probabilities of obtaining the measureme
+nt 
+\begin_inset Formula $x_{i}$
+\end_inset
+
+ for each hypothesis.
+ The Poisson probabilities are given by Equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Pois"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{equation}
+P\left(x|\lambda\right)=\frac{\lambda^{x}e^{-\lambda}}{x!}\label{eq:Pois}
+\end{equation}
+
+\end_inset
+
+While easy to write down, this is incredibly difficult to calculate on a
+ computer due to how large 
+\begin_inset Formula $x!$
+\end_inset
+
+ becomes.
+ In order to calculate the probabilities for large 
+\begin_inset Formula $x$
+\end_inset
+
+, we take the logarithm
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\ln P=\ln\left(\lambda^{x}\right)+\ln\left(e^{-\lambda}\right)-\ln\left(x!\right)
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\ln P=x\ln\lambda-\lambda-\ln x!
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\ln P=x\ln\lambda-\lambda-\ln\Gamma\left(x+1\right)\label{eq:Poisapprox}
+\end{equation}
+
+\end_inset
+
+The Python package 
+\begin_inset listings
+inline true
+status open
+
+\begin_layout Plain Layout
+
+scipy
+\end_layout
+
+\end_inset
+
+ includes a function for numerically calculating the log-gamma function.
+ Therefore, we can easily implement Equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Poisapprox"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ in code while keeping the numbers reasonable, then obtain the probability
+ by taking the exponential.
+\end_layout
+
+\begin_layout Standard
+Once we have calculated the LLR for each dataset, it is convenient for the
+ hypothesis analysis to sort the data.
+ For our purposes, Python's default sort routine is sufficient.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "acm_1403886"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
 \end_body
 \end_document
