@@ -80,7 +80,7 @@ def PlotHypotheses(array0, array1, title, alpha, filename='Hypotheses'):
     
     plt.grid(True)
 
-    fig.savefig(filename + '.pdf')
+    fig.savefig(filename + '.png')
     plt.show()
 
     return alpha, beta, lambda_crit
@@ -197,8 +197,8 @@ if __name__ == "__main__":
     alpha, beta, lambda_crit = PlotHypotheses(LLR[0], LLR[1], plot_title, alpha, filename=fname)
     
     print
-    print('Plot output as ' + fname + '.pdf')
-    print('Using alpha = {:.3f}, we get lambda_crit = {:.3f} and beta = {:.3f}'.format(alpha, beta, lambda_crit))
+    print('Plot output to file as ' + fname + '.png')
+    print('Using alpha = {:.3f}, we get lambda_crit = {:.3f} and beta = {:.3f}'.format(alpha, lambda_crit, beta))
     print
     sys.exit(1)
 

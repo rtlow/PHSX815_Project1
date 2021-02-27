@@ -114,7 +114,7 @@ Ryan Low
 \backslash
 
 \backslash
-PHSX 815 - Rogan
+PHSX 815
 \end_layout
 
 \end_inset
@@ -128,16 +128,46 @@ status open
 
 \begin_layout Plain Layout
 
-Project 1
+Instrumental noise and astronomical signals
 \backslash
 
 \backslash
-22 February 2021
+February 2021
 \end_layout
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Title
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+texttt{PHSX815
+\backslash
+_Project1}:
+\backslash
+
+\backslash
+Distinguishing between instrumental noise and astronomical signals
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Author
+Ryan Low
+\end_layout
+
+\begin_layout Date
+February 2021
 \end_layout
 
 \begin_layout Section
@@ -172,6 +202,13 @@ Modern astronomy relies on Charged Coupled Devices (CCDs) and other such
 
 \begin_layout Section
 Problem Statement
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Problem-Statement"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -187,13 +224,59 @@ Suppose we can successfully characterize the noise level for a CCD.
 \begin_inset Formula $\lambda_{noise}=10$
 \end_inset
 
-.
+ counts per second.
  Given some faint astronomical source with rate parameter 
 \begin_inset Formula $\lambda_{star}$
 \end_inset
 
 , our task is to see whether we can distinguish between the noise or the
- source at some significance level.
+ source.
+ To do so, we will perform simulations of measurements for a various number
+ of observations.
+ We will then choose some significance level, 
+\begin_inset Formula $\alpha$
+\end_inset
+
+, to perform hypothesis testing at.
+ From this, we will be able to find the false negative rate 
+\begin_inset Formula $\beta$
+\end_inset
+
+.
+ Let our null hypothesis be that we are observing noise.
+ We want to reject the null hypothesis as much as possible when we observe
+ a source.
+ Therefore, for a fixed number of observations, exposures per observation,
+ and significance level, we want to find the 
+\begin_inset Formula $\lambda_{star}$
+\end_inset
+
+ such that our false negative rate is less than 
+\begin_inset Formula $1\%$
+\end_inset
+
+.
+ In practice, it is time inexpensive to take calibration frames since you
+ can take them before it is dark outside.
+ However, it is time expensive to take repeated exposures of the same source,
+ since night time is limited.
+ Therefore, we want to minimize the amount of observation time if possible.
+ Hereafter, I will refer to the individual exposures as measurements and
+ each observation as an experiment.
+ Let's suppose we can perform 
+\begin_inset Formula $1000$
+\end_inset
+
+ experiments with 
+\begin_inset Formula $10$
+\end_inset
+
+ measurements each.
+ We will arbitrarily set the significance level to 
+\begin_inset Formula $\alpha=0.01$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
@@ -338,7 +421,336 @@ noprefix "false"
 \begin_layout Standard
 Once we have calculated the LLR for each dataset, it is convenient for the
  hypothesis analysis to sort the data.
- For our purposes, Python's default sort routine is sufficient.
+ In general, if we know how the test statistic, 
+\begin_inset Formula $\lambda$
+\end_inset
+
+, is distributed given that one of the hypotheses is true, the significance
+ level, 
+\begin_inset Formula $\alpha$
+\end_inset
+
+, is obtained when
+\begin_inset Formula 
+\[
+\int_{\lambda_{\alpha}}^{\infty}d\lambda\,P\left(\lambda|H_{0}\right)=\alpha
+\]
+
+\end_inset
+
+This gives us the critical value of 
+\begin_inset Formula $\lambda$
+\end_inset
+
+, 
+\begin_inset Formula $\lambda_{\alpha}$
+\end_inset
+
+.
+ From this, false negative rate is then
+\begin_inset Formula 
+\[
+\beta=\int_{-\infty}^{\lambda_{\alpha}}d\lambda\,P\left(\lambda|H_{1}\right)
+\]
+
+\end_inset
+
+If our data is sorted in two arrays, one for 
+\begin_inset Formula $H_{0}$
+\end_inset
+
+ and one for 
+\begin_inset Formula $H_{1}$
+\end_inset
+
+, we can find 
+\begin_inset Formula $\lambda_{\alpha}$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta$
+\end_inset
+
+ without having to do numerical integration.
+ 
+\begin_inset Formula $\lambda_{\alpha}$
+\end_inset
+
+ is the 
+\begin_inset Formula $\lambda$
+\end_inset
+
+ at 
+\begin_inset Formula $\left(1-\alpha\right)$
+\end_inset
+
+ percent of the way through the 
+\begin_inset Formula $H_{0}$
+\end_inset
+
+ array or at its end.
+ Knowing 
+\begin_inset Formula $\lambda_{\alpha}$
+\end_inset
+
+, we can find all values in the 
+\begin_inset Formula $H_{1}$
+\end_inset
+
+ array that are less than 
+\begin_inset Formula $\lambda_{\alpha}$
+\end_inset
+
+.
+ 
+\begin_inset Formula $\beta$
+\end_inset
+
+ is the percentage through the 
+\begin_inset Formula $H_{1}$
+\end_inset
+
+ array that is below 
+\begin_inset Formula $\lambda_{\alpha}$
+\end_inset
+
+.
+ For our purposes, Python's default sort implementation is sufficient.
+\end_layout
+
+\begin_layout Section
+Analysis of Results
+\end_layout
+
+\begin_layout Standard
+We ran simulations at different rate parameters ranging from 10 to 20 counts
+ per second.
+ As stated in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Problem-Statement"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, we will use 
+\begin_inset Formula $\lambda_{noise}=10$
+\end_inset
+
+ counts per second as the noise dataset, with the rest of the simulations
+ representing the stellar dataset.
+ The hypothesis testing plots for 
+\begin_inset Formula $\lambda_{star}=20$
+\end_inset
+
+ counts per second is presented in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Histograms-of-the"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename rate1_10.00rate2_20.00.png
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Histograms of the LLR comparing 
+\begin_inset Formula $\lambda_{noise}=10$
+\end_inset
+
+ and 
+\begin_inset Formula $\lambda_{star}=20$
+\end_inset
+
+.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Histograms-of-the"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+ We see that even at 
+\begin_inset Formula $\lambda_{star}=20$
+\end_inset
+
+ counts per second, the two distributions are perfectly distinguishable.
+ Adjusting 
+\begin_inset Formula $\lambda_{star}$
+\end_inset
+
+ by integer steps, the distributions do not begin to cross until 
+\begin_inset Formula $\lambda_{star}=16$
+\end_inset
+
+ counts per second.
+ The criterion that 
+\begin_inset Formula $\beta<1\%$
+\end_inset
+
+ is not violated until 
+\begin_inset Formula $\lambda_{star}=15.3$
+\end_inset
+
+ counts per second (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Histograms-of-the-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), where 
+\begin_inset Formula $\beta=1.3\%$
+\end_inset
+
+.
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename rate1_10.00rate2_15.30.png
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Histograms of the LLR comparing 
+\begin_inset Formula $\lambda_{noise}=10$
+\end_inset
+
+ and 
+\begin_inset Formula $\lambda_{star}=15.3$
+\end_inset
+
+.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Histograms-of-the-2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+ Below this rate, the 
+\begin_inset Formula $\beta$
+\end_inset
+
+ begins to increase substantially.
+ When 
+\begin_inset Formula $\lambda_{star}=11$
+\end_inset
+
+ counts per second, 
+\begin_inset Formula $\beta=92\%$
+\end_inset
+
+.
+ Therefore, we must be careful when observing sources that are very close
+ to the noise level.
+ However, away from the noise level, we should expect to be able to distinguish
+ between signals and noise very well.
+ This is a very important consideration when searching for low magnitude
+ objects on the sky, where discovering new objects depends on observing
+ near the magnitude limit of an instrument.
+ Such surveys need to carefully characterize the noise level of their instrument
+s and run a similar analysis to determine at what brightness they can successful
+ly detect astronomical sources.
+\end_layout
+
+\begin_layout Section
+Conclusions
+\end_layout
+
+\begin_layout Standard
+By modeling the measured signal and noise of a CCD as a Poisson process,
+ we have shown that by taking many observations, we can successfully distinguish
+ between signals and noise with 
+\begin_inset Formula $\beta<1\%$
+\end_inset
+
+ with 
+\begin_inset Formula $\lambda_{star}$
+\end_inset
+
+ close to 
+\begin_inset Formula $\lambda_{noise}$
+\end_inset
+
+.
+ However, as 
+\begin_inset Formula $\lambda_{star}$
+\end_inset
+
+ approaches 
+\begin_inset Formula $\lambda_{noise}$
+\end_inset
+
+, the LLR distributions rapidly overlap, making distinguishing between the
+ signal and noise difficult.
+ This kind of modeling is useful in informing survey design, where the discovery
+ of new objects relies on making observations close to the noise level of
+ the instruments.
+ 
 \end_layout
 
 \begin_layout Standard
