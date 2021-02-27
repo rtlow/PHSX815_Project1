@@ -49,9 +49,6 @@ def PlotHypotheses(array0, array1, title, alpha):
     plt.hist(array0, 100, density=True, color='b', alpha=0.5, label='$P(\lambda | H0)$')
     plt.hist(array1, 100, density=True, color='g', alpha=0.5, label='$P(\lambda | H1)$')
     
-    lambda_crit = 0
-    beta = 0
-    
     # since the list is sorted
     # lambda_crit is achieved at 1-alpha percent of the way through array0
     # or at its end
@@ -80,6 +77,8 @@ def PlotHypotheses(array0, array1, title, alpha):
     plt.legend()
 
     plt.title(title)
+    
+    plt.grid(True)
 
     fig.savefig('Hypotheses.pdf')
     plt.show()
